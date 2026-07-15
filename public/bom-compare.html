@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BOM Compare — OG Tools</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117; --surface: #181c27; --border: #252a38;
+      --accent: #4f8ef7; --accent2: #7c3aed;
+      --text: #e8eaf0; --muted: #6b7280;
+      --green: #4ade80; --green-bg: rgba(34,197,94,0.1);
+      --red: #f87171;   --red-bg: rgba(248,113,113,0.1);
+      --yellow: #fbbf24; --yellow-bg: rgba(251,191,36,0.1);
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 0 2.5rem; height: 60px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(15,17,23,0.92); backdrop-filter: blur(10px); z-index: 100; }
+    .nav-left { display: flex; align-items: center; gap: 1rem; }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: 0.82rem; display: flex; align-items: center; gap: 0.35rem; transition: color 0.15s; }
+    .back-btn:hover { color: var(--text); }
+    .nav-divider { color: var(--border); }
+    .nav-logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; }
+    .nav-logo .og { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .nav-right { font-size: 0.78rem; color: var(--muted); }
+    .page { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 0.35rem; }
+    .page-header p { font-size: 0.85rem; color: var(--muted); }
+    .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem; }
+    @media (max-width: 640px) { .upload-grid { grid-template-columns: 1fr; } }
+    .upload-box { background: var(--surface); border: 1.5px dashed var(--border); border-radius: 12px; padding: 1.75rem; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; position: relative; }
+    .upload-box:hover { border-color: var(--accent); background: rgba(79,142,247,0.04); }
+    .upload-box.loaded { border-color: rgba(74,222,128,0.4); border-style: solid; }
+    .upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .upload-icon { font-size: 1.75rem; margin-bottom: 0.6rem; }
+    .upload-label { font-size: 0.72rem; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 0.4rem; }
+    .upload-name { font-size: 0.82rem; color: var(--text); font-weight: 500; }
+    .upload-hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+    .upload-check { color: var(--green); font-size: 0.8rem; margin-top: 0.4rem; font-weight: 500; }
+    .run-btn { width: 100%; padding: 0.85rem; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; border: none; cursor: pointer; transition: opacity 0.2s; margin-bottom: 2rem; }
+    .run-btn:hover { opacity: 0.9; }
+    .run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .loading { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem; display: none; }
+    .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 0.5rem; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin-bottom: 2rem; }
+    @media (max-width: 640px) { .stats { grid-template-columns: repeat(2,1fr); } }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.25rem; }
+    .stat-num { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700; }
+    .stat-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; margin-top: 0.1rem; }
+    .stat-added .stat-num   { color: var(--green); }
+    .stat-removed .stat-num { color: var(--red); }
+    .stat-changed .stat-num { color: var(--yellow); }
+    .stat-same .stat-num    { color: var(--muted); }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem; }
+    .filter-btns { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+    .filter-btn { font-size: 0.75rem; font-weight: 600; padding: 0.35rem 0.8rem; border-radius: 100px; border: 1px solid var(--border); background: var(--surface); color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .filter-btn.active, .filter-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(79,142,247,0.08); }
+    .export-btn { font-size: 0.78rem; font-weight: 600; padding: 0.4rem 1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; transition: all 0.15s; }
+    .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    thead th { padding: 0.75rem 1rem; text-align: left; font-size: 0.7rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); background: var(--surface); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+    td { padding: 0.65rem 1rem; vertical-align: top; }
+    .badge { display: inline-flex; align-items: center; font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 100px; letter-spacing: 0.5px; white-space: nowrap; }
+    .badge-added    { background: var(--green-bg);  color: var(--green); }
+    .badge-removed  { background: var(--red-bg);    color: var(--red); }
+    .badge-changed  { background: var(--yellow-bg); color: var(--yellow); }
+    .badge-nochange { background: rgba(107,114,128,0.1); color: var(--muted); }
+    .change-line { display: block; line-height: 1.8; }
+    .empty-state { text-align: center; padding: 5rem 2rem; color: var(--muted); }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.4; }
+    .empty-state p { font-size: 0.85rem; }
+    .error-msg { background: var(--red-bg); border: 1px solid rgba(248,113,113,0.3); border-radius: 10px; padding: 1rem 1.25rem; color: var(--red); font-size: 0.85rem; margin-bottom: 1.5rem; display: none; }
+    footer { border-top: 1px solid var(--border); padding: 1.5rem 2.5rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--muted); }
+    footer strong { color: var(--text); }
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-left">
+    <a class="back-btn" href="index.html">← Back</a>
+    <span class="nav-divider">/</span>
+    <div class="nav-logo"><span class="og">OG</span> Tools</div>
+  </div>
+  <div class="nav-right">BOM Compare v1.0</div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <h1>BOM Compare</h1>
+    <p>Upload OLD and NEW BOM files. Comparison runs securely on the server — your files are never stored.</p>
+  </div>
+
+  <div class="upload-grid">
+    <div class="upload-box" id="dropOld" onclick="document.getElementById('fileOld').click()">
+      <input type="file" id="fileOld" accept=".xlsx,.xls" onchange="handleFile('old', this)" />
+      <div class="upload-icon">📂</div>
+      <div class="upload-label">OLD BOM</div>
+      <div class="upload-name" id="nameOld">Click to upload</div>
+      <div class="upload-hint">.xlsx / .xls</div>
+      <div class="upload-check" id="checkOld" style="display:none">✓ Loaded</div>
+    </div>
+    <div class="upload-box" id="dropNew" onclick="document.getElementById('fileNew').click()">
+      <input type="file" id="fileNew" accept=".xlsx,.xls" onchange="handleFile('new', this)" />
+      <div class="upload-icon">📂</div>
+      <div class="upload-label">NEW BOM</div>
+      <div class="upload-name" id="nameNew">Click to upload</div>
+      <div class="upload-hint">.xlsx / .xls</div>
+      <div class="upload-check" id="checkNew" style="display:none">✓ Loaded</div>
+    </div>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <button class="run-btn" id="runBtn" onclick="compare()" disabled>Compare BOMs</button>
+
+  <div class="loading" id="loading">
+    <span class="loading-spinner"></span> Comparing BOMs on server...
+  </div>
+
+  <div class="stats" id="statsArea" style="display:none">
+    <div class="stat-card stat-added">   <div class="stat-num" id="sAdded">0</div>   <div class="stat-label">Added</div></div>
+    <div class="stat-card stat-removed"> <div class="stat-num" id="sRemoved">0</div> <div class="stat-label">Removed</div></div>
+    <div class="stat-card stat-changed"> <div class="stat-num" id="sChanged">0</div> <div class="stat-label">Changed</div></div>
+    <div class="stat-card stat-same">    <div class="stat-num" id="sSame">0</div>    <div class="stat-label">Not Changed</div></div>
+  </div>
+
+  <div class="toolbar" id="toolbar" style="display:none">
+    <div class="filter-btns">
+      <button class="filter-btn active" onclick="setFilter('ALL', this)">All</button>
+      <button class="filter-btn" onclick="setFilter('ADDED', this)">Added</button>
+      <button class="filter-btn" onclick="setFilter('REMOVED', this)">Removed</button>
+      <button class="filter-btn" onclick="setFilter('CHANGED', this)">Changed</button>
+      <button class="filter-btn" onclick="setFilter('NOT CHANGE', this)">Not Changed</button>
+    </div>
+    <button class="export-btn" onclick="exportExcel()">⬇ Export Excel</button>
+  </div>
+
+  <div class="table-wrap" id="tableWrap" style="display:none">
+    <table>
+      <thead>
+        <tr>
+          <th>Status</th><th>Lvl</th><th>Title</th><th>Parent</th>
+          <th>OLD Rev</th><th>NEW Rev</th><th>OLD QTY</th><th>NEW QTY</th>
+        </tr>
+      </thead>
+      <tbody id="resultBody"></tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" id="emptyState">
+    <div class="icon">📋</div>
+    <p>Upload both BOM files and click <strong>Compare BOMs</strong> to see results.</p>
+  </div>
+</div>
+
+<footer>
+  <span><strong>OG Tools</strong> — Engineering Utilities</span>
+  <span>Built by <strong>Osman Güler</strong></span>
+</footer>
+
+<script>
+  let oldFile = null, newFile = null;
+  let allResults = [], oldTitlesData = [];
+  let currentFilter = 'ALL';
+
+  function handleFile(type, input) {
+    const file = input.files[0];
+    if (!file) return;
+    if (type === 'old') {
+      oldFile = file;
+      document.getElementById('nameOld').textContent = file.name;
+      document.getElementById('checkOld').style.display = 'block';
+      document.getElementById('dropOld').classList.add('loaded');
+    } else {
+      newFile = file;
+      document.getElementById('nameNew').textContent = file.name;
+      document.getElementById('checkNew').style.display = 'block';
+      document.getElementById('dropNew').classList.add('loaded');
+    }
+    document.getElementById('runBtn').disabled = !(oldFile && newFile);
+    document.getElementById('errorMsg').style.display = 'none';
+  }
+
+  async function compare() {
+    if (!oldFile || !newFile) return;
+
+    document.getElementById('runBtn').disabled = true;
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('statsArea').style.display = 'none';
+    document.getElementById('toolbar').style.display = 'none';
+    document.getElementById('tableWrap').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('errorMsg').style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('old', oldFile);
+    formData.append('new', newFile);
+
+    try {
+      const res = await fetch('/api/compare', { method: 'POST', body: formData });
+      const data = await res.json();
+
+      if (!data.success) throw new Error(data.error || 'Server error');
+
+      allResults    = data.results;
+      oldTitlesData = data.oldTitles;
+
+      document.getElementById('sAdded').textContent   = data.stats.added;
+      document.getElementById('sRemoved').textContent = data.stats.removed;
+      document.getElementById('sChanged').textContent = data.stats.changed;
+      document.getElementById('sSame').textContent    = data.stats.notChange;
+
+      document.getElementById('statsArea').style.display = 'grid';
+      document.getElementById('toolbar').style.display   = 'flex';
+      document.getElementById('tableWrap').style.display = 'block';
+
+      setFilter('ALL', document.querySelector('.filter-btn'));
+
+    } catch (err) {
+      const errEl = document.getElementById('errorMsg');
+      errEl.textContent = 'Error: ' + err.message;
+      errEl.style.display = 'block';
+      document.getElementById('emptyState').style.display = 'block';
+    } finally {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('runBtn').disabled = false;
+    }
+  }
+
+  function setFilter(f, btn) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.className = 'filter-btn');
+    btn.classList.add('active');
+    renderTable();
+  }
+
+  function renderTable() {
+    const body = document.getElementById('resultBody');
+    body.innerHTML = '';
+    const rows = currentFilter === 'ALL' ? allResults
+      : allResults.filter(r => {
+          if (currentFilter === 'CHANGED') return r.status !== 'ADDED' && r.status !== 'REMOVED' && r.status !== 'NOT CHANGE';
+          return r.status === currentFilter;
+        });
+
+    for (const r of rows) {
+      const isChanged = r.status !== 'ADDED' && r.status !== 'REMOVED' && r.status !== 'NOT CHANGE';
+      const badgeClass = r.status === 'ADDED' ? 'badge-added'
+        : r.status === 'REMOVED' ? 'badge-removed'
+        : isChanged ? 'badge-changed' : 'badge-nochange';
+
+      const statusHtml = isChanged
+        ? r.status.split('\n').map(s => `<span class="badge badge-changed change-line">${s}</span>`).join('')
+        : `<span class="badge ${badgeClass}">${r.status}</span>`;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${statusHtml}</td>
+        <td>${r.level}</td>
+        <td>${r.title}</td>
+        <td style="color:var(--muted)">${r.parent}</td>
+        <td>${r.oldRev || '—'}</td>
+        <td>${r.newRev || '—'}</td>
+        <td>${r.oldQty}</td>
+        <td>${r.newQty}</td>
+      `;
+      body.appendChild(tr);
+    }
+  }
+
+  function exportExcel() {
+    const ws_data = [['Status','Level','Title','Parent','OLD Revision','NEW Revision','OLD QTY','NEW QTY']];
+    for (const r of allResults) {
+      ws_data.push([r.status, r.level, r.title, r.parent, r.oldRev, r.newRev, r.oldQty, r.newQty]);
+    }
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    ws['!cols'] = [22,8,20,20,14,14,10,10].map(w => ({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws, 'RESULT');
+
+    const otData = [['OLD TITLE','OLD REVISION']];
+    for (const r of oldTitlesData) otData.push([r.title, r.oldRev]);
+    const ws2 = XLSX.utils.aoa_to_sheet(otData);
+    XLSX.utils.book_append_sheet(wb, ws2, 'OLD TITLES');
+
+    XLSX.writeFile(wb, 'BOM_Compare_Result.xlsx');
+  }
+</script>
+</body>
+</html>
