@@ -181,7 +181,7 @@
     for (const r of resultData) {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td><span class="level-badge">L${r.level}</span></td>
+        <td><span class="level-badge">${r.level}</span></td>
         <td>${r.title}</td>
         <td>${r.rev || '—'}</td>
         <td style="color:var(--muted)">${r.desc || '—'}</td>
