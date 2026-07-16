@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BOM Builder – CABIN & IFE | OG Tools</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117; --surface: #181c27; --border: #252a38;
+      --accent: #4f8ef7; --accent2: #7c3aed;
+      --text: #e8eaf0; --muted: #6b7280;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 0 2.5rem; height: 60px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(15,17,23,0.92); backdrop-filter: blur(10px); z-index: 100; }
+    .nav-left { display: flex; align-items: center; gap: 1rem; }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: 0.82rem; display: flex; align-items: center; gap: 0.35rem; transition: color 0.15s; }
+    .back-btn:hover { color: var(--text); }
+    .nav-divider { color: var(--border); }
+    .nav-logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; }
+    .nav-logo .og { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .nav-right { font-size: 0.78rem; color: var(--muted); }
+    .page { max-width: 1200px; margin: 0 auto; padding: 2.5rem 2rem 5rem; }
+    .page-header { margin-bottom: 2rem; }
+    .page-header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.6rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 0.35rem; }
+    .page-header p { font-size: 0.85rem; color: var(--muted); }
+    .badge-info { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.72rem; font-weight: 600; padding: 0.25rem 0.7rem; border-radius: 100px; background: rgba(79,142,247,0.12); color: var(--accent); border: 1px solid rgba(79,142,247,0.2); margin-top: 0.6rem; }
+    .upload-box { background: var(--surface); border: 1.5px dashed var(--border); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s; position: relative; margin-bottom: 1.5rem; }
+    .upload-box:hover { border-color: var(--accent); background: rgba(79,142,247,0.04); }
+    .upload-box.loaded { border-color: rgba(74,222,128,0.4); border-style: solid; }
+    .upload-box input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+    .upload-icon { font-size: 2rem; margin-bottom: 0.6rem; }
+    .upload-name { font-size: 0.85rem; color: var(--text); font-weight: 500; margin-bottom: 0.3rem; }
+    .upload-hint { font-size: 0.75rem; color: var(--muted); }
+    .upload-check { color: #4ade80; font-size: 0.8rem; margin-top: 0.4rem; font-weight: 500; }
+    .run-btn { width: 100%; padding: 0.85rem; border-radius: 10px; background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; font-family: 'Inter', sans-serif; font-size: 0.9rem; font-weight: 600; border: none; cursor: pointer; transition: opacity 0.2s; margin-bottom: 2rem; }
+    .run-btn:hover { opacity: 0.9; }
+    .run-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .loading { text-align: center; padding: 2rem; color: var(--muted); font-size: 0.85rem; display: none; }
+    .loading-spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 0.5rem; vertical-align: middle; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .stat-bar { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; display: none; }
+    .stat-bar .stat-num { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 700; color: var(--accent); }
+    .stat-bar .stat-label { font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem; }
+    .toolbar { display: flex; justify-content: flex-end; margin-bottom: 1rem; }
+    .export-btn { font-size: 0.78rem; font-weight: 600; padding: 0.4rem 1rem; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; transition: all 0.15s; }
+    .export-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    thead th { padding: 0.75rem 1rem; text-align: left; font-size: 0.7rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); background: var(--surface); border-bottom: 1px solid var(--border); white-space: nowrap; }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.02); }
+    td { padding: 0.65rem 1rem; vertical-align: middle; }
+    .level-badge { display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.45rem; border-radius: 5px; background: rgba(79,142,247,0.12); color: var(--accent); }
+    .empty-state { text-align: center; padding: 5rem 2rem; color: var(--muted); }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.4; }
+    .empty-state p { font-size: 0.85rem; }
+    .error-msg { background: rgba(248,113,113,0.1); border: 1px solid rgba(248,113,113,0.3); border-radius: 10px; padding: 1rem 1.25rem; color: #f87171; font-size: 0.85rem; margin-bottom: 1.5rem; display: none; }
+    footer { border-top: 1px solid var(--border); padding: 1.5rem 2.5rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--muted); }
+    footer strong { color: var(--text); }
+  </style>
+</head>
+<body>
+<nav>
+  <div class="nav-left">
+    <a class="back-btn" href="index.html">← Back</a>
+    <span class="nav-divider">/</span>
+    <div class="nav-logo"><span class="og">OG</span> Tools</div>
+  </div>
+  <div class="nav-right">BOM Builder v1.0</div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <h1>BOM Builder – CABIN & IFE</h1>
+    <p>Upload a raw BOM file. Duplicates are merged, quantities calculated, parent titles assigned.</p>
+    <div class="badge-info">✅ Rev passed through as-is — no conversion applied.
+  </div>
+
+  <div class="upload-box" id="dropBox" onclick="document.getElementById('fileInput').click()">
+    <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFile(this)" />
+    <div class="upload-icon">📂</div>
+    <div class="upload-name" id="fileName">Click to upload BOM file</div>
+    <div class="upload-hint">.xlsx / .xls — Columns: Level, Title, Revision, Description, Maturity State</div>
+    <div class="upload-check" id="fileCheck" style="display:none">✓ File loaded</div>
+  </div>
+
+  <div class="error-msg" id="errorMsg"></div>
+
+  <button class="run-btn" id="runBtn" onclick="process()" disabled>Build Quantified BOM</button>
+
+  <div class="loading" id="loading">
+    <span class="loading-spinner"></span> Processing BOM on server...
+  </div>
+
+  <div class="stat-bar" id="statBar">
+    <div>
+      <div class="stat-num" id="statCount">0</div>
+      <div class="stat-label">Unique items in output</div>
+    </div>
+    <button class="export-btn" onclick="exportExcel()">⬇ Export Excel</button>
+  </div>
+
+  <div class="table-wrap" id="tableWrap" style="display:none">
+    <table>
+      <thead>
+        <tr>
+          <th>Level</th><th>Title</th><th>Revision</th>
+          <th>Description</th><th>Maturity State</th><th>Parent Title</th><th>Qty</th>
+        </tr>
+      </thead>
+      <tbody id="resultBody"></tbody>
+    </table>
+  </div>
+
+  <div class="empty-state" id="emptyState">
+    <div class="icon">🏗️</div>
+    <p>Upload a raw BOM file and click <strong>Build Quantified BOM</strong>.</p>
+  </div>
+</div>
+
+<footer>
+  <span><strong>OG Tools</strong> — Engineering Utilities</span>
+  <span>Built by <strong>Osman Güler</strong></span>
+</footer>
+
+<script>
+  let selectedFile = null;
+  let resultData = [];
+
+  function handleFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    selectedFile = file;
+    document.getElementById('fileName').textContent = file.name;
+    document.getElementById('fileCheck').style.display = 'block';
+    document.getElementById('dropBox').classList.add('loaded');
+    document.getElementById('runBtn').disabled = false;
+    document.getElementById('errorMsg').style.display = 'none';
+  }
+
+  async function process() {
+    if (!selectedFile) return;
+    document.getElementById('runBtn').disabled = true;
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('statBar').style.display = 'none';
+    document.getElementById('tableWrap').style.display = 'none';
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('errorMsg').style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+
+    try {
+      const res  = await fetch('/api/bom_builder_cabin', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || 'Server error');
+
+      resultData = data.rows;
+      document.getElementById('statCount').textContent = data.count;
+      document.getElementById('statBar').style.display = 'flex';
+      document.getElementById('tableWrap').style.display = 'block';
+      renderTable();
+    } catch (err) {
+      const el = document.getElementById('errorMsg');
+      el.textContent = 'Error: ' + err.message;
+      el.style.display = 'block';
+      document.getElementById('emptyState').style.display = 'block';
+    } finally {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('runBtn').disabled = false;
+    }
+  }
+
+  function renderTable() {
+    const body = document.getElementById('resultBody');
+    body.innerHTML = '';
+    for (const r of resultData) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="level-badge">L${r.level}</span></td>
+        <td>${r.title}</td>
+        <td>${r.rev || '—'}</td>
+        <td style="color:var(--muted)">${r.desc || '—'}</td>
+        <td style="color:var(--muted)">${r.maturity || '—'}</td>
+        <td style="color:var(--muted)">${r.parent}</td>
+        <td><strong>${r.qty}</strong></td>
+      `;
+      body.appendChild(tr);
+    }
+  }
+
+  function exportExcel() {
+    const ws_data = [['Level','Title','Revision','Description','Maturity State','Parent Title','Quantity']];
+    for (const r of resultData) {
+      ws_data.push([r.level, r.title, r.rev, r.desc, r.maturity, r.parent, r.qty]);
+    }
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+    ws['!cols'] = [8,22,12,20,16,22,10].map(w => ({wch:w}));
+    XLSX.utils.book_append_sheet(wb, ws, 'BOM');
+    XLSX.writeFile(wb, 'BOM_Builder_CABIN.xlsx');
+  }
+</script>
+</body>
+</html>

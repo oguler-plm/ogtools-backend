@@ -74,6 +74,28 @@
     .badge-changed  { background: var(--yellow-bg); color: var(--yellow); }
     .badge-nochange { background: rgba(107,114,128,0.1); color: var(--muted); }
     .change-line { display: block; line-height: 1.8; }
+
+    /* VIEW TOGGLE */
+    .view-toggle { display: flex; gap: 0.4rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.25rem; }
+    .view-btn { font-size: 0.75rem; font-weight: 600; padding: 0.3rem 0.8rem; border-radius: 6px; border: none; background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; }
+    .view-btn.active { background: var(--accent); color: #fff; }
+
+    /* TREE VIEW */
+    .tree-wrap { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; display: none; }
+    .tree-node { border-bottom: 1px solid var(--border); }
+    .tree-node:last-child { border-bottom: none; }
+    .tree-row { display: flex; align-items: center; gap: 0.6rem; padding: 0.6rem 1rem; cursor: pointer; transition: background 0.1s; user-select: none; }
+    .tree-row:hover { background: rgba(255,255,255,0.02); }
+    .tree-toggle { width: 16px; height: 16px; display: inline-flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.7rem; flex-shrink: 0; transition: transform 0.15s; }
+    .tree-toggle.open { transform: rotate(90deg); }
+    .tree-toggle.leaf { opacity: 0; pointer-events: none; }
+    .tree-title { font-size: 0.82rem; flex: 1; }
+    .tree-meta { display: flex; align-items: center; gap: 0.5rem; flex-shrink: 0; }
+    .tree-rev { font-size: 0.72rem; color: var(--muted); }
+    .tree-qty { font-size: 0.72rem; color: var(--muted); background: var(--border); padding: 0.1rem 0.4rem; border-radius: 4px; }
+    .tree-children { display: none; }
+    .tree-children.open { display: block; }
+
     .empty-state { text-align: center; padding: 5rem 2rem; color: var(--muted); }
     .empty-state .icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: 0.4; }
     .empty-state p { font-size: 0.85rem; }
@@ -133,14 +155,20 @@
   </div>
 
   <div class="toolbar" id="toolbar" style="display:none">
-    <div class="filter-btns">
+    <div class="filter-btns" id="filterBtns">
       <button class="filter-btn active" onclick="setFilter('ALL', this)">All</button>
       <button class="filter-btn" onclick="setFilter('ADDED', this)">Added</button>
       <button class="filter-btn" onclick="setFilter('REMOVED', this)">Removed</button>
       <button class="filter-btn" onclick="setFilter('CHANGED', this)">Changed</button>
       <button class="filter-btn" onclick="setFilter('NOT CHANGE', this)">Not Changed</button>
     </div>
-    <button class="export-btn" onclick="exportExcel()">⬇ Export Excel</button>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <div class="view-toggle">
+        <button class="view-btn active" id="btnTable" onclick="setView('table')">≡ Table</button>
+        <button class="view-btn" id="btnTree" onclick="setView('tree')">⋮ Tree</button>
+      </div>
+      <button class="export-btn" onclick="exportExcel()">⬇ Export Excel</button>
+    </div>
   </div>
 
   <div class="table-wrap" id="tableWrap" style="display:none">
@@ -154,6 +182,8 @@
       <tbody id="resultBody"></tbody>
     </table>
   </div>
+
+  <div class="tree-wrap" id="treeWrap"></div>
 
   <div class="empty-state" id="emptyState">
     <div class="icon">📋</div>
@@ -273,6 +303,142 @@
         <td>${r.newQty}</td>
       `;
       body.appendChild(tr);
+    }
+  }
+
+  let currentView = 'table';
+
+  function setView(view) {
+    currentView = view;
+    document.getElementById('btnTable').classList.toggle('active', view === 'table');
+    document.getElementById('btnTree').classList.toggle('active', view === 'tree');
+    document.getElementById('tableWrap').style.display = view === 'table' ? 'block' : 'none';
+    document.getElementById('treeWrap').style.display  = view === 'tree'  ? 'block' : 'none';
+    // Filter butonlari sadece table view'da anlamli
+    document.getElementById('filterBtns').style.opacity = view === 'table' ? '1' : '0.3';
+    document.getElementById('filterBtns').style.pointerEvents = view === 'table' ? '' : 'none';
+    if (view === 'tree') renderTree();
+  }
+
+  function getStatusColor(status) {
+    if (status === 'ADDED')    return 'var(--green)';
+    if (status === 'REMOVED')  return 'var(--red)';
+    if (status === 'NOT CHANGE') return 'var(--muted)';
+    return 'var(--yellow)';
+  }
+
+  function getStatusIcon(status) {
+    if (status === 'ADDED')    return '✚';
+    if (status === 'REMOVED')  return '✕';
+    if (status === 'NOT CHANGE') return '·';
+    return '◆';
+  }
+
+  function renderTree() {
+    const wrap = document.getElementById('treeWrap');
+    wrap.innerHTML = '';
+
+    // Ağaç yapısı oluştur: parent -> children map
+    const nodeMap = {};
+    for (const r of allResults) {
+      nodeMap[r.title] = { ...r, children: [] };
+    }
+    const roots = [];
+    for (const r of allResults) {
+      if (r.parent === 'Root' || !nodeMap[r.parent]) {
+        roots.push(nodeMap[r.title]);
+      } else {
+        if (nodeMap[r.parent]) {
+          nodeMap[r.parent].children.push(nodeMap[r.title]);
+        } else {
+          roots.push(nodeMap[r.title]);
+        }
+      }
+    }
+
+    function buildNode(node, depth) {
+      const hasChildren = node.children && node.children.length > 0;
+      const color = getStatusColor(node.status);
+      const icon  = getStatusIcon(node.status);
+
+      const nodeEl = document.createElement('div');
+      nodeEl.className = 'tree-node';
+
+      const rowEl = document.createElement('div');
+      rowEl.className = 'tree-row';
+      rowEl.style.paddingLeft = (1 + depth * 1.5) + 'rem';
+
+      const toggleEl = document.createElement('span');
+      toggleEl.className = 'tree-toggle' + (hasChildren ? '' : ' leaf');
+      toggleEl.textContent = '▶';
+
+      const statusEl = document.createElement('span');
+      statusEl.style.cssText = `color:${color};font-size:0.7rem;font-weight:700;width:14px;flex-shrink:0;`;
+      statusEl.textContent = icon;
+
+      const titleEl = document.createElement('span');
+      titleEl.className = 'tree-title';
+      titleEl.textContent = node.title;
+
+      const metaEl = document.createElement('span');
+      metaEl.className = 'tree-meta';
+
+      if (node.status !== 'NOT CHANGE') {
+        const badgeEl = document.createElement('span');
+        badgeEl.style.cssText = `color:${color};font-size:0.68rem;font-weight:700;`;
+        const statusText = node.status.split('\n').join(' · ');
+        badgeEl.textContent = statusText;
+        metaEl.appendChild(badgeEl);
+      }
+
+      if (node.oldRev || node.newRev) {
+        const revEl = document.createElement('span');
+        revEl.className = 'tree-rev';
+        if (node.oldRev && node.newRev && node.oldRev !== node.newRev) {
+          revEl.innerHTML = `<span style="text-decoration:line-through;color:var(--red)">${node.oldRev}</span> → <span style="color:var(--green)">${node.newRev}</span>`;
+        } else {
+          revEl.textContent = node.newRev || node.oldRev;
+        }
+        metaEl.appendChild(revEl);
+      }
+
+      if (node.oldQty !== undefined) {
+        const qtyEl = document.createElement('span');
+        qtyEl.className = 'tree-qty';
+        if (node.oldQty !== node.newQty) {
+          qtyEl.innerHTML = `<span style="color:var(--red)">${node.oldQty}</span>→<span style="color:var(--green)">${node.newQty}</span>`;
+        } else {
+          qtyEl.textContent = 'x' + node.newQty;
+        }
+        metaEl.appendChild(qtyEl);
+      }
+
+      rowEl.appendChild(toggleEl);
+      rowEl.appendChild(statusEl);
+      rowEl.appendChild(titleEl);
+      rowEl.appendChild(metaEl);
+      nodeEl.appendChild(rowEl);
+
+      if (hasChildren) {
+        const childrenEl = document.createElement('div');
+        childrenEl.className = 'tree-children';
+        for (const child of node.children) {
+          childrenEl.appendChild(buildNode(child, depth + 1));
+        }
+        nodeEl.appendChild(childrenEl);
+
+        rowEl.addEventListener('click', () => {
+          const isOpen = childrenEl.classList.contains('open');
+          childrenEl.classList.toggle('open', !isOpen);
+          toggleEl.classList.toggle('open', !isOpen);
+        });
+      }
+
+      return nodeEl;
+    }
+
+    for (const root of roots) {
+      wrap.appendChild(buildNode(root, 0));
     }
   }
 
