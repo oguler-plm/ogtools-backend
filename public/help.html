@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Help & Training | TCI PLM Team</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f1117; --surface: #181c27; --border: #252a38;
+      --accent: #4f8ef7; --accent2: #7c3aed;
+      --text: #e8eaf0; --muted: #6b7280;
+      --green: #4ade80; --red: #f87171; --yellow: #fbbf24;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; line-height: 1.6; }
+
+    nav { display: flex; align-items: center; justify-content: space-between; padding: 0 2.5rem; height: 60px; border-bottom: 1px solid var(--border); position: sticky; top: 0; background: rgba(15,17,23,0.92); backdrop-filter: blur(10px); z-index: 100; }
+    .nav-left { display: flex; align-items: center; gap: 1rem; }
+    .back-btn { color: var(--muted); text-decoration: none; font-size: 0.82rem; display: flex; align-items: center; gap: 0.35rem; transition: color 0.15s; }
+    .back-btn:hover { color: var(--text); }
+    .nav-divider { color: var(--border); }
+    .nav-logo { font-family: 'Space Grotesk', sans-serif; font-size: 1.1rem; font-weight: 700; }
+    .nav-logo .og { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .nav-right { display: flex; align-items: center; gap: 1rem; }
+
+    /* LANG TOGGLE */
+    .lang-toggle { display: flex; gap: 0.3rem; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.2rem; }
+    .lang-btn { font-size: 0.72rem; font-weight: 700; padding: 0.25rem 0.65rem; border-radius: 6px; border: none; background: transparent; color: var(--muted); cursor: pointer; transition: all 0.15s; letter-spacing: 0.5px; }
+    .lang-btn.active { background: var(--accent); color: #fff; }
+
+    .page { max-width: 900px; margin: 0 auto; padding: 3rem 2rem 6rem; }
+
+    .page-header { margin-bottom: 3rem; }
+    .page-header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.8rem; font-weight: 700; letter-spacing: -0.5px; margin-bottom: 0.5rem; }
+    .page-header p { font-size: 0.9rem; color: var(--muted); }
+
+    /* TOOL SECTIONS */
+    .tool-section { margin-bottom: 2rem; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; }
+    .tool-header { display: flex; align-items: center; gap: 0.75rem; padding: 1.25rem 1.5rem; cursor: pointer; background: var(--surface); transition: background 0.15s; user-select: none; }
+    .tool-header:hover { background: #1e2333; }
+    .tool-icon { font-size: 1.2rem; }
+    .tool-title { font-family: 'Space Grotesk', sans-serif; font-size: 1rem; font-weight: 600; flex: 1; }
+    .tool-chevron { color: var(--muted); font-size: 0.8rem; transition: transform 0.2s; }
+    .tool-chevron.open { transform: rotate(90deg); }
+    .tool-body { display: none; padding: 0 1.5rem 1.5rem; border-top: 1px solid var(--border); background: var(--bg); }
+    .tool-body.open { display: block; }
+
+    /* CONTENT BLOCKS */
+    .section-title { font-size: 0.72rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--accent); margin: 1.5rem 0 0.75rem; }
+    .step-list { list-style: none; counter-reset: steps; }
+    .step-list li { counter-increment: steps; display: flex; gap: 0.75rem; align-items: flex-start; padding: 0.6rem 0; border-bottom: 1px solid var(--border); font-size: 0.85rem; }
+    .step-list li:last-child { border-bottom: none; }
+    .step-num { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #fff; font-size: 0.68rem; font-weight: 700; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 0.1rem; }
+
+    .warn-box { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25); border-radius: 10px; padding: 1rem 1.25rem; margin: 0.75rem 0; font-size: 0.84rem; }
+    .warn-box .warn-title { color: var(--yellow); font-weight: 600; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem; }
+    .warn-box ul { padding-left: 1.2rem; color: var(--muted); }
+    .warn-box ul li { margin-bottom: 0.3rem; }
+
+    .info-box { background: rgba(79,142,247,0.08); border: 1px solid rgba(79,142,247,0.2); border-radius: 10px; padding: 1rem 1.25rem; margin: 0.75rem 0; font-size: 0.84rem; color: var(--muted); }
+    .info-box strong { color: var(--text); }
+
+    /* FORMAT TABLE */
+    .format-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin: 0.75rem 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+    .format-table th { background: var(--surface); padding: 0.6rem 1rem; text-align: left; font-size: 0.68rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--border); }
+    .format-table td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--border); }
+    .format-table tr:last-child td { border-bottom: none; }
+    .format-table .req { color: var(--green); font-size: 0.7rem; font-weight: 600; }
+    .format-table .opt { color: var(--muted); font-size: 0.7rem; }
+
+    /* STATUS BADGES */
+    .status-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin: 0.75rem 0; }
+    .status-item { display: flex; align-items: flex-start; gap: 0.6rem; padding: 0.75rem; background: var(--surface); border-radius: 8px; font-size: 0.82rem; }
+    .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; margin-top: 0.3rem; }
+
+    footer { border-top: 1px solid var(--border); padding: 1.5rem 2.5rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; color: var(--muted); }
+    footer strong { color: var(--text); }
+
+    @media (max-width: 600px) {
+      nav { padding: 0 1.25rem; }
+      .page { padding: 2rem 1.25rem 4rem; }
+      .status-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-left">
+    <a class="back-btn" href="index.html">← <span data-tr="Geri" data-en="Back">Geri</span></a>
+    <span class="nav-divider">/</span>
+    <div class="nav-logo"><span class="og">TCI</span> PLM Team</div>
+  </div>
+  <div class="nav-right">
+    <div class="lang-toggle">
+      <button class="lang-btn active" onclick="setLang('tr')">TR</button>
+      <button class="lang-btn" onclick="setLang('en')">EN</button>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="page-header">
+    <h1 data-tr="📚 Yardım & Eğitim" data-en="📚 Help & Training">📚 Yardım & Eğitim</h1>
+    <p data-tr="Araçların nasıl kullanılacağını ve dikkat edilmesi gerekenleri buradan öğrenebilirsiniz." data-en="Learn how to use the tools and what to watch out for.">Araçların nasıl kullanılacağını ve dikkat edilmesi gerekenleri buradan öğrenebilirsiniz.</p>
+  </div>
+
+  <!-- ===================== BOM COMPARE ===================== -->
+  <div class="tool-section">
+    <div class="tool-header" onclick="toggleSection('s1')">
+      <span class="tool-icon">📋</span>
+      <span class="tool-title">BOM Compare</span>
+      <span class="tool-chevron" id="c1">▶</span>
+    </div>
+    <div class="tool-body" id="s1">
+
+      <div class="section-title" data-tr="NE İŞE YARAR?" data-en="WHAT DOES IT DO?">NE İŞE YARAR?</div>
+      <p style="font-size:0.85rem;color:var(--muted)" data-tr="İki farklı BOM'u (OLD ve NEW) karşılaştırarak aralarındaki farkları tespit eder. Eklenen, kaldırılan ve değişen parçaları listeler." data-en="Compares two BOMs (OLD and NEW) and identifies differences. Lists added, removed, and changed parts.">İki farklı BOM'u (OLD ve NEW) karşılaştırarak aralarındaki farkları tespit eder. Eklenen, kaldırılan ve değişen parçaları listeler.</p>
+
+      <div class="section-title" data-tr="KULLANIM ADIMLARI" data-en="HOW TO USE">KULLANIM ADIMLARI</div>
+      <ul class="step-list">
+        <li><span class="step-num">1</span><span data-tr="OLD BOM dosyanızı hazırlayın (.xlsx veya .xls formatında)." data-en="Prepare your OLD BOM file (.xlsx or .xls format).">OLD BOM dosyanızı hazırlayın (.xlsx veya .xls formatında).</span></li>
+        <li><span class="step-num">2</span><span data-tr="NEW BOM dosyanızı hazırlayın (.xlsx veya .xls formatında)." data-en="Prepare your NEW BOM file (.xlsx or .xls format).">NEW BOM dosyanızı hazırlayın (.xlsx veya .xls formatında).</span></li>
+        <li><span class="step-num">3</span><span data-tr="'OLD BOM' kutusuna tıklayarak eski BOM dosyasını yükleyin." data-en="Click the 'OLD BOM' box and upload the old BOM file.">'OLD BOM' kutusuna tıklayarak eski BOM dosyasını yükleyin.</span></li>
+        <li><span class="step-num">4</span><span data-tr="'NEW BOM' kutusuna tıklayarak yeni BOM dosyasını yükleyin." data-en="Click the 'NEW BOM' box and upload the new BOM file.">'NEW BOM' kutusuna tıklayarak yeni BOM dosyasını yükleyin.</span></li>
+        <li><span class="step-num">5</span><span data-tr="'Compare BOMs' butonuna tıklayın, sonuçlar birkaç saniye içinde gelir." data-en="Click 'Compare BOMs', results will appear in a few seconds.">'Compare BOMs' butonuna tıklayın, sonuçlar birkaç saniye içinde gelir.</span></li>
+        <li><span class="step-num">6</span><span data-tr="Sonuçları filtreleyebilir (Added, Removed, Changed) veya Excel olarak indirebilirsiniz." data-en="You can filter results (Added, Removed, Changed) or download as Excel.">Sonuçları filtreleyebilir (Added, Removed, Changed) veya Excel olarak indirebilirsiniz.</span></li>
+        <li><span class="step-num">7</span><span data-tr="Tree View butonuna tıklayarak sonuçları BOM hiyerarşisinde de görebilirsiniz." data-en="Click Tree View to see results in BOM hierarchy structure.">Tree View butonuna tıklayarak sonuçları BOM hiyerarşisinde de görebilirsiniz.</span></li>
+      </ul>
+
+      <div class="section-title" data-tr="DURUM AÇIKLAMALARI" data-en="STATUS DESCRIPTIONS">DURUM AÇIKLAMALARI</div>
+      <div class="status-grid">
+        <div class="status-item">
+          <div class="status-dot" style="background:var(--green)"></div>
+          <div><strong>ADDED</strong><br><span style="color:var(--muted);font-size:0.78rem" data-tr="NEW BOM'da var, OLD BOM'da yok. Yeni eklenen parça." data-en="In NEW BOM, not in OLD BOM. Newly added part.">NEW BOM'da var, OLD BOM'da yok. Yeni eklenen parça.</span></div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:var(--red)"></div>
+          <div><strong>REMOVED</strong><br><span style="color:var(--muted);font-size:0.78rem" data-tr="OLD BOM'da var, NEW BOM'da yok. Kaldırılan parça." data-en="In OLD BOM, not in NEW BOM. Removed part.">OLD BOM'da var, NEW BOM'da yok. Kaldırılan parça.</span></div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:var(--yellow)"></div>
+          <div><strong>REVISION CHANGE</strong><br><span style="color:var(--muted);font-size:0.78rem" data-tr="Aynı parça, revizyon numarası değişmiş." data-en="Same part, revision number changed.">Aynı parça, revizyon numarası değişmiş.</span></div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:var(--yellow)"></div>
+          <div><strong>QTY CHANGE</strong><br><span style="color:var(--muted);font-size:0.78rem" data-tr="Aynı parça, adet değişmiş." data-en="Same part, quantity changed.">Aynı parça, adet değişmiş.</span></div>
+        </div>
+        <div class="status-item">
+          <div class="status-dot" style="background:var(--muted)"></div>
+          <div><strong>NOT CHANGE</strong><br><span style="color:var(--muted);font-size:0.78rem" data-tr="Hiçbir değişiklik yok, aynı parça aynı bilgilerle." data-en="No change, same part with same information.">Hiçbir değişiklik yok, aynı parça aynı bilgilerle.</span></div>
+        </div>
+      </div>
+
+      <div class="section-title" data-tr="GİRİŞ DOSYASI FORMATI" data-en="INPUT FILE FORMAT">GİRİŞ DOSYASI FORMATI</div>
+      <table class="format-table">
+        <tr><th data-tr="Sütun" data-en="Column">Sütun</th><th data-tr="Açıklama" data-en="Description">Açıklama</th><th data-tr="Zorunlu" data-en="Required">Zorunlu</th></tr>
+        <tr><td>A — Level</td><td data-tr="BOM seviyesi (0, 1, 2, 3...)" data-en="BOM level (0, 1, 2, 3...)">BOM seviyesi (0, 1, 2, 3...)</td><td><span class="req">✓ Evet</span></td></tr>
+        <tr><td>B — Title</td><td data-tr="Part numarası / başlık" data-en="Part number / title">Part numarası / başlık</td><td><span class="req">✓ Evet</span></td></tr>
+        <tr><td>C — Revision</td><td data-tr="Revizyon numarası" data-en="Revision number">Revizyon numarası</td><td><span class="req">✓ Evet</span></td></tr>
+        <tr><td>D — Description</td><td data-tr="Parça açıklaması" data-en="Part description">Parça açıklaması</td><td><span class="opt">Opsiyonel</span></td></tr>
+        <tr><td>E — Parent</td><td data-tr="Üst parça başlığı" data-en="Parent part title">Üst parça başlığı</td><td><span class="req">✓ Evet</span></td></tr>
+        <tr><td>F — Parent Rev</td><td data-tr="Üst parça revizyonu" data-en="Parent part revision">Üst parça revizyonu</td><td><span class="opt">Opsiyonel</span></td></tr>
+        <tr><td>G — Quantity</td><td data-tr="Adet" data-en="Quantity">Adet</td><td><span class="req">✓ Evet</span></td></tr>
+      </table>
+
+      <div class="warn-box">
+        <div class="warn-title">⚠️ <span data-tr="Dikkat Edilmesi Gerekenler" data-en="Important Notes">Dikkat Edilmesi Gerekenler</span></div>
+        <ul>
+          <li data-tr="Eşleştirme Title + Parent kombinasyonuna göre yapılır. Aynı parça farklı parent altındaysa farklı satır sayılır." data-en="Matching is done by Title + Parent combination. Same part under different parent is counted as different.">Eşleştirme Title + Parent kombinasyonuna göre yapılır. Aynı parça farklı parent altındaysa farklı satır sayılır.</li>
+          <li data-tr="Dosyanın ilk sayfası kullanılır, başlık satırı 1. satırda olmalıdır." data-en="First sheet of the file is used, header row must be in row 1.">Dosyanın ilk sayfası kullanılır, başlık satırı 1. satırda olmalıdır.</li>
+          <li data-tr="BOM Builder çıktısı bu araca doğrudan verilebilir." data-en="BOM Builder output can be directly used as input for this tool.">BOM Builder çıktısı bu araca doğrudan verilebilir.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== BOM BUILDER SEAT ===================== -->
+  <div class="tool-section">
+    <div class="tool-header" onclick="toggleSection('s2')">
+      <span class="tool-icon">🔁</span>
+      <span class="tool-title">BOM Builder – SEAT</span>
+      <span class="tool-chevron" id="c2">▶</span>
+    </div>
+    <div class="tool-body" id="s2">
+
+      <div class="section-title" data-tr="NE İŞE YARAR?" data-en="WHAT DOES IT DO?">NE İŞE YARAR?</div>
+      <p style="font-size:0.85rem;color:var(--muted)" data-tr="Ham SEAT BOM'unu (tekrarlı satırlardan oluşan) adetli BOM'a dönüştürür. Aynı parça birden fazla kez geçiyorsa birleştirir ve adet hesaplar. Aynı zamanda revizyon numaralarını A→P00, B→P01 formatına çevirir." data-en="Converts raw SEAT BOM (with repeated rows) to quantified BOM. Merges duplicate parts and calculates quantities. Also converts revision numbers from A→P00, B→P01 format.">Ham SEAT BOM'unu (tekrarlı satırlardan oluşan) adetli BOM'a dönüştürür. Aynı parça birden fazla kez geçiyorsa birleştirir ve adet hesaplar. Aynı zamanda revizyon numaralarını A→P00, B→P01 formatına çevirir.</p>
+
+      <div class="info-box">
+        🔁 <strong data-tr="Revizyon Dönüşümü:" data-en="Revision Conversion:">Revizyon Dönüşümü:</strong>
+        <span data-tr=" A→P00, B→P01, C→P02, D→P03, E→P04, F→P05, G→P06, H→P07, I→P08, J→P09, K→P10, L→P11" data-en=" A→P00, B→P01, C→P02, D→P03, E→P04, F→P05, G→P06, H→P07, I→P08, J→P09, K→P10, L→P11"> A→P00, B→P01, C→P02, D→P03, E→P04, F→P05, G→P06, H→P07, I→P08, J→P09, K→P10, L→P11</span>
+      </div>
+
+      <div class="section-title" data-tr="KULLANIM ADIMLARI" data-en="HOW TO USE">KULLANIM ADIMLARI</div>
+      <ul class="step-list">
+        <li><span class="step-num">1</span><span data-tr="SEAT ham BOM dosyanızı hazırlayın (.xlsx veya .xls formatında)." data-en="Prepare your raw SEAT BOM file (.xlsx or .xls format).">SEAT ham BOM dosyanızı hazırlayın (.xlsx veya .xls formatında).</span></li>
+        <li><span class="step-num">2</span><span data-tr="Dosya yükleme kutusuna tıklayarak dosyanızı seçin." data-en="Click the upload box and select your file.">Dosya yükleme kutusuna tıklayarak dosyanızı seçin.</span></li>
+        <li><span class="step-num">3</span><span data-tr="'Build Quantified BOM' butonuna tıklayın." data-en="Click 'Build Quantified BOM'.">'Build Quantified BOM' butonuna tıklayın.</span></li>
+        <li><span class="step-num">4</span><span data-tr="Sonuçları ekranda inceleyin — revizyon dönüşümü otomatik yapılmıştır." data-en="Review results on screen — revision conversion is done automatically.">Sonuçları ekranda inceleyin — revizyon dönüşümü otomatik yapılmıştır.</span></li>
+        <li><span class="step-num">5</span><span data-tr="'Export Excel' butonu ile sonucu indirin. Bu dosya BOM Compare aracına doğrudan verilebilir." data-en="Download with 'Export Excel'. This file can be directly used in BOM Compare.">'Export Excel' butonu ile sonucu indirin. Bu dosya BOM Compare aracına doğrudan verilebilir.</span></li>
+      </ul>
+
+      <div class="section-title" data-tr="GİRİŞ DOSYASI FORMATI" data-en="INPUT FILE FORMAT">GİRİŞ DOSYASI FORMATI</div>
+      <table class="format-table">
+        <tr><th data-tr="Sütun" data-en="Column">Sütun</th><th data-tr="Açıklama" data-en="Description">Açıklama</th><th data-tr="Zorunlu" data-en="Required">Zorunlu</th></tr>
+        <tr><td>A — Level</td><td data-tr="BOM seviyesi (0, 1, 2, 3...)" data-en="BOM level (0, 1, 2, 3...)">BOM seviyesi (0, 1, 2, 3...)</td><td><span class="req">✓ Evet</span></td></tr>
+        <tr><td>B — Title</td><td data-tr="Part numarası / başlık" data-en="Part number / title">Part numarası / başlık</td><td><span class="req">✓ Evet</span></td></tr>
+        <tr><td>C — Revision</td><td data-tr="Revizyon (A, B, C... formatında)" data-en="Revision (A, B, C... format)">Revizyon (A, B, C... formatında)</td><td><span class="req">✓ Evet</span></td></tr>
+        <tr><td>D — Description</td><td data-tr="Parça açıklaması" data-en="Part description">Parça açıklaması</td><td><span class="opt">Opsiyonel</span></td></tr>
+        <tr><td>E — Maturity State</td><td data-tr="Olgunluk durumu (Released, In Work vb.)" data-en="Maturity state (Released, In Work etc.)">Olgunluk durumu (Released, In Work vb.)</td><td><span class="opt">Opsiyonel</span></td></tr>
+      </table>
+
+      <div class="warn-box">
+        <div class="warn-title">⚠️ <span data-tr="Dikkat Edilmesi Gerekenler" data-en="Important Notes">Dikkat Edilmesi Gerekenler</span></div>
+        <ul>
+          <li data-tr="Giriş dosyasında Parent sütunu OLMAMALIDIR — araç parent bilgisini Level'a göre kendisi hesaplar." data-en="Input file should NOT have a Parent column — the tool calculates parent from Level automatically.">Giriş dosyasında Parent sütunu OLMAMALIDIR — araç parent bilgisini Level'a göre kendisi hesaplar.</li>
+          <li data-tr="Aynı Title + Parent + Level kombinasyonundaki tekrar eden satırlar otomatik birleştirilir." data-en="Repeated rows with same Title + Parent + Level are automatically merged.">Aynı Title + Parent + Level kombinasyonundaki tekrar eden satırlar otomatik birleştirilir.</li>
+          <li data-tr="Revizyon dönüşümü sadece A-L arası harfler için geçerlidir. Diğer değerler olduğu gibi kalır." data-en="Revision conversion only applies to letters A-L. Other values remain as-is.">Revizyon dönüşümü sadece A-L arası harfler için geçerlidir. Diğer değerler olduğu gibi kalır.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== BOM BUILDER CABIN ===================== -->
+  <div class="tool-section">
+    <div class="tool-header" onclick="toggleSection('s3')">
+      <span class="tool-icon">🏗️</span>
+      <span class="tool-title">BOM Builder – CABIN & IFE</span>
+      <span class="tool-chevron" id="c3">▶</span>
+    </div>
+    <div class="tool-body" id="s3">
+
+      <div class="section-title" data-tr="NE İŞE YARAR?" data-en="WHAT DOES IT DO?">NE İŞE YARAR?</div>
+      <p style="font-size:0.85rem;color:var(--muted)" data-tr="Ham CABIN & IFE BOM'unu adetli BOM'a dönüştürür. BOM Builder SEAT ile aynı mantıkta çalışır ancak revizyon dönüşümü YAPILMAZ — revizyonlar olduğu gibi kalır." data-en="Converts raw CABIN & IFE BOM to quantified BOM. Works the same as BOM Builder SEAT but revision conversion is NOT applied — revisions remain as-is.">Ham CABIN & IFE BOM'unu adetli BOM'a dönüştürür. BOM Builder SEAT ile aynı mantıkta çalışır ancak revizyon dönüşümü YAPILMAZ — revizyonlar olduğu gibi kalır.</p>
+
+      <div class="info-box">
+        ✅ <strong data-tr="Revizyon Dönüşümü Yok:" data-en="No Revision Conversion:">Revizyon Dönüşümü Yok:</strong>
+        <span data-tr=" Revizyonlar P00, P01 gibi girilmişse olduğu gibi korunur." data-en=" Revisions entered as P00, P01 etc. are preserved as-is."> Revizyonlar P00, P01 gibi girilmişse olduğu gibi korunur.</span>
+      </div>
+
+      <div class="section-title" data-tr="KULLANIM ADIMLARI" data-en="HOW TO USE">KULLANIM ADIMLARI</div>
+      <ul class="step-list">
+        <li><span class="step-num">1</span><span data-tr="CABIN & IFE ham BOM dosyanızı hazırlayın (.xlsx veya .xls formatında)." data-en="Prepare your raw CABIN & IFE BOM file (.xlsx or .xls format).">CABIN & IFE ham BOM dosyanızı hazırlayın (.xlsx veya .xls formatında).</span></li>
+        <li><span class="step-num">2</span><span data-tr="Dosya yükleme kutusuna tıklayarak dosyanızı seçin." data-en="Click the upload box and select your file.">Dosya yükleme kutusuna tıklayarak dosyanızı seçin.</span></li>
+        <li><span class="step-num">3</span><span data-tr="'Build Quantified BOM' butonuna tıklayın." data-en="Click 'Build Quantified BOM'.">'Build Quantified BOM' butonuna tıklayın.</span></li>
+        <li><span class="step-num">4</span><span data-tr="Sonuçları ekranda inceleyin." data-en="Review results on screen.">Sonuçları ekranda inceleyin.</span></li>
+        <li><span class="step-num">5</span><span data-tr="'Export Excel' butonu ile sonucu indirin." data-en="Download with 'Export Excel'.">'Export Excel' butonu ile sonucu indirin.</span></li>
+      </ul>
+
+      <div class="section-title" data-tr="GİRİŞ DOSYASI FORMATI" data-en="INPUT FILE FORMAT">GİRİŞ DOSYASI FORMATI</div>
+      <table class="format-table">
+        <tr><th data-tr="Sütun" data-en="Column">Sütun</th><th data-tr="Açıklama" data-en="Description">Açıklama</th><th data-tr="Zorunlu" data-en="Required">Zorunlu</th></tr>
+        <tr><td>A — Level</td><td data-tr="BOM seviyesi (0, 1, 2, 3...)" data-en="BOM level (0, 1, 2, 3...)">BOM seviyesi (0, 1, 2, 3...)</td><td><span class="req">✓ Evet</span></td></tr>
+        <tr><td>B — Title</td><td data-tr="Part numarası / başlık" data-en="Part number / title">Part numarası / başlık</td><td><span class="req">✓ Evet</span></td></tr>
+        <tr><td>C — Revision</td><td data-tr="Revizyon (P00, P01... formatında)" data-en="Revision (P00, P01... format)">Revizyon (P00, P01... formatında)</td><td><span class="req">✓ Evet</span></td></tr>
+        <tr><td>D — Description</td><td data-tr="Parça açıklaması" data-en="Part description">Parça açıklaması</td><td><span class="opt">Opsiyonel</span></td></tr>
+        <tr><td>E — Maturity State</td><td data-tr="Olgunluk durumu" data-en="Maturity state">Olgunluk durumu</td><td><span class="opt">Opsiyonel</span></td></tr>
+      </table>
+
+      <div class="warn-box">
+        <div class="warn-title">⚠️ <span data-tr="Dikkat Edilmesi Gerekenler" data-en="Important Notes">Dikkat Edilmesi Gerekenler</span></div>
+        <ul>
+          <li data-tr="Giriş dosyasında Parent sütunu OLMAMALIDIR." data-en="Input file should NOT have a Parent column.">Giriş dosyasında Parent sütunu OLMAMALIDIR.</li>
+          <li data-tr="Bu araç SEAT değil CABIN & IFE projeleri içindir. SEAT için BOM Builder – SEAT kullanın." data-en="This tool is for CABIN & IFE projects, not SEAT. Use BOM Builder – SEAT for SEAT projects.">Bu araç SEAT değil CABIN & IFE projeleri içindir. SEAT için BOM Builder – SEAT kullanın.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== GENEL ===================== -->
+  <div class="tool-section">
+    <div class="tool-header" onclick="toggleSection('s4')">
+      <span class="tool-icon">ℹ️</span>
+      <span class="tool-title" data-tr="Genel Bilgiler & SSS" data-en="General Info & FAQ">Genel Bilgiler & SSS</span>
+      <span class="tool-chevron" id="c4">▶</span>
+    </div>
+    <div class="tool-body" id="s4">
+
+      <div class="section-title" data-tr="DOSYA GÜVENLİĞİ" data-en="FILE SECURITY">DOSYA GÜVENLİĞİ</div>
+      <div class="info-box">
+        🔒 <span data-tr="Yüklediğiniz dosyalar sunucuda işlendikten sonra saklanmaz. Hiçbir veri kalıcı olarak kaydedilmez." data-en="Files you upload are not stored after processing on the server. No data is permanently saved.">Yüklediğiniz dosyalar sunucuda işlendikten sonra saklanmaz. Hiçbir veri kalıcı olarak kaydedilmez.</span>
+      </div>
+
+      <div class="section-title" data-tr="TIPIK İŞ AKIŞI" data-en="TYPICAL WORKFLOW">TIPIK İŞ AKIŞI</div>
+      <ul class="step-list">
+        <li><span class="step-num">1</span><span data-tr="Enovia'dan ham BOM'u export et." data-en="Export raw BOM from Enovia.">Enovia'dan ham BOM'u export et.</span></li>
+        <li><span class="step-num">2</span><span data-tr="BOM Builder – SEAT veya CABIN & IFE ile adetli BOM'a dönüştür." data-en="Convert to quantified BOM using BOM Builder – SEAT or CABIN & IFE.">BOM Builder – SEAT veya CABIN & IFE ile adetli BOM'a dönüştür.</span></li>
+        <li><span class="step-num">3</span><span data-tr="İki farklı versiyonu karşılaştırmak için BOM Compare'e yükle." data-en="Upload to BOM Compare to compare two different versions.">İki farklı versiyonu karşılaştırmak için BOM Compare'e yükle.</span></li>
+        <li><span class="step-num">4</span><span data-tr="Sonuçları Export Excel ile indir, raporla." data-en="Download results with Export Excel and report.">Sonuçları Export Excel ile indir, raporla.</span></li>
+      </ul>
+
+      <div class="section-title" data-tr="DESTEKLENEN DOSYA FORMATLARI" data-en="SUPPORTED FILE FORMATS">DESTEKLENEN DOSYA FORMATLARI</div>
+      <div class="info-box">
+        <span data-tr="Tüm araçlar " data-en="All tools support ">Tüm araçlar </span><strong>.xlsx</strong><span data-tr=" ve " data-en=" and "> ve </span><strong>.xls</strong><span data-tr=" formatlarını destekler. CSV desteklenmez." data-en=" formats. CSV is not supported."> formatlarını destekler. CSV desteklenmez.</span>
+      </div>
+
+      <div class="warn-box">
+        <div class="warn-title">⚠️ <span data-tr="Sık Yapılan Hatalar" data-en="Common Mistakes">Sık Yapılan Hatalar</span></div>
+        <ul>
+          <li data-tr="CSV dosyası yüklemek — önce Excel'e (.xlsx) dönüştürün." data-en="Uploading CSV files — convert to Excel (.xlsx) first.">CSV dosyası yüklemek — önce Excel'e (.xlsx) dönüştürün.</li>
+          <li data-tr="BOM Builder'a Parent sütunu olan dosya yüklemek — ham BOM yükleyin." data-en="Uploading a file with Parent column to BOM Builder — upload raw BOM.">BOM Builder'a Parent sütunu olan dosya yüklemek — ham BOM yükleyin.</li>
+          <li data-tr="BOM Compare'e ham BOM yüklemek — önce BOM Builder ile işleyin." data-en="Uploading raw BOM to BOM Compare — process with BOM Builder first.">BOM Compare'e ham BOM yüklemek — önce BOM Builder ile işleyin.</li>
+          <li data-tr="Başlık satırının 1. satırda olmaması — Excel dosyasında başlıklar her zaman 1. satırda olmalı." data-en="Header row not being in row 1 — headers must always be in row 1 in Excel.">Başlık satırının 1. satırda olmaması — Excel dosyasında başlıklar her zaman 1. satırda olmalı.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <span><strong>TCI PLM Team</strong> — Engineering Utilities</span>
+  <span data-tr="Geliştiren: " data-en="Built by ">Geliştiren: <strong>Osman Güler</strong></span>
+</footer>
+
+<script>
+  let currentLang = 'tr';
+
+  function setLang(lang) {
+    currentLang = lang;
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.lang-btn[onclick="setLang('${lang}')"]`).classList.add('active');
+    document.querySelectorAll('[data-tr]').forEach(el => {
+      el.textContent = el.getAttribute('data-' + lang);
+    });
+  }
+
+  function toggleSection(id) {
+    const body = document.getElementById(id);
+    const chevron = document.getElementById('c' + id.replace('s',''));
+    const isOpen = body.classList.contains('open');
+    body.classList.toggle('open', !isOpen);
+    chevron.classList.toggle('open', !isOpen);
+  }
+</script>
+
+</body>
+</html>
